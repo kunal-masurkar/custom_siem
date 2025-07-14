@@ -4,12 +4,30 @@ Aggregate, normalize, and analyze logs from various systems (network, firewall, 
 
 ---
 
+## 📚 Table of Contents
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Directory Structure](#-directory-structure)
+- [Setup & Installation](#-setup--installation)
+- [API Authentication & Security](#api-authentication--security)
+- [API Endpoints](#-api-endpoints)
+- [Testing & Code Quality](#testing--code-quality)
+- [Configuration](#-configuration)
+- [Extending the Project](#-extending-the-project)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
 ## 🚀 Features
 - **Real-time log ingestion** (via Logstash)
 - **Query-based threat hunting** (Elasticsearch + Flask API)
 - **Correlation rules for events** (customizable in Python)
 - **Alerting system** (Email/Slack notifications)
 - **Dashboard export** (PDF generation)
+- **API key authentication** for all endpoints
+- **Input validation** and error handling
+- **Automated testing and CI/CD**
 
 ---
 
@@ -56,6 +74,8 @@ custom_siem/
 │
 ├── export/             # PDF export scripts
 │
+├── tests/              # Unit and integration tests
+│
 ├── requirements.txt
 ├── SIEM_Project_Plan.txt
 └── README.md
@@ -90,6 +110,7 @@ custom_siem/
    EMAIL_USER=your@email.com
    EMAIL_PASS=yourpassword
    EMAIL_TO=recipient@email.com
+   API_KEY=changeme123  # Set your API key here
    ```
 
 4. **Set up ELK stack (Elasticsearch, Logstash, Kibana):**
@@ -105,24 +126,53 @@ custom_siem/
 
 ---
 
+## API Authentication & Security
+
+- **All API endpoints (except `/` and `/health`) require an API key.**
+- Pass your API key in the `X-API-KEY` header with every request:
+  ```http
+  X-API-KEY: changeme123
+  ```
+- Input validation is enforced on endpoints (e.g., `/logs/search` expects a string for `q`).
+- Error responses are returned as JSON with appropriate status codes (e.g., 401 Unauthorized, 400 Bad Request).
+
+---
+
 ## 🔍 API Endpoints
 
-| Endpoint              | Method | Description                                 |
-|-----------------------|--------|---------------------------------------------|
-| `/logs/search`        | GET    | Search logs in Elasticsearch                |
-| `/rules`              | GET    | List all correlation rules                  |
-| `/rules`              | POST   | Add a new correlation rule                  |
-| `/alert`              | POST   | Trigger an alert (email/Slack)              |
-| `/export/pdf`         | POST   | Export a dashboard as a PDF                 |
+| Endpoint              | Method | Description                                 | Auth Required |
+|-----------------------|--------|---------------------------------------------|--------------|
+| `/logs/search`        | GET    | Search logs in Elasticsearch                | Yes          |
+| `/rules`              | GET    | List all correlation rules                  | Yes          |
+| `/rules`              | POST   | Add a new correlation rule                  | Yes          |
+| `/alert`              | POST   | Trigger an alert (email/Slack)              | Yes          |
+| `/export/pdf`         | POST   | Export a dashboard as a PDF                 | Yes          |
+| `/`                   | GET    | API status                                  | No           |
+| `/health`             | GET    | Health check                                | No           |
 
 ### Example: Search Logs
 ```
 GET /logs/search?q=failed+login
+X-API-KEY: changeme123
+```
+**Response:**
+```json
+{
+  "results": [ ... ],
+  "query": "failed login"
+}
+```
+**Error Example:**
+```json
+{
+  "error": "Unauthorized"
+}
 ```
 
 ### Example: Add a Correlation Rule
 ```
 POST /rules
+X-API-KEY: changeme123
 Content-Type: application/json
 {
   "name": "Failed SSH Login",
@@ -133,6 +183,7 @@ Content-Type: application/json
 ### Example: Trigger an Alert
 ```
 POST /alert
+X-API-KEY: changeme123
 Content-Type: application/json
 {
   "message": "Suspicious activity detected!"
@@ -142,11 +193,25 @@ Content-Type: application/json
 ### Example: Export Dashboard as PDF
 ```
 POST /export/pdf
+X-API-KEY: changeme123
 Content-Type: application/json
 {
   "dashboard": "Network Overview"
 }
 ```
+
+---
+
+## Testing & Code Quality
+
+- **Unit and integration tests** are in the `tests/` directory.
+- Run all tests with:
+  ```bash
+  pytest
+  ```
+- **Continuous Integration (CI)** is set up with GitHub Actions to run tests and linting on every push and pull request.
+- All Python code uses **type hints** and **docstrings** for clarity and maintainability.
+- Input validation is enforced using `marshmallow`.
 
 ---
 
@@ -156,6 +221,7 @@ Content-Type: application/json
 - **Kibana:** Import dashboards/visualizations from `kibana/`.
 - **Flask API:** All endpoints are in `api/routes/`.
 - **Alerting:** Configure Slack and email credentials in `.env`.
+- **API Key:** Set your API key in `.env` as `API_KEY`.
 
 ---
 
@@ -165,18 +231,24 @@ Content-Type: application/json
 - Build a frontend UI for easier management
 - Use Kibana’s reporting API for real dashboard exports
 - Add authentication and RBAC to the API
+- Integrate threat intelligence feeds
+- Add automated response (SOAR-like features)
 
 ---
 
 ## 🤝 Contributing
 Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
+**Code Quality Guidelines:**
+- Write unit tests for new features or bug fixes.
+- Use type hints and docstrings in all Python code.
+- Follow PEP8 and run `flake8` for linting.
+- Ensure all tests pass before submitting a PR.
+
 ---
 
 ## 📄 License
 [MIT](LICENSE) 
-
----
 
 ## 👥 Author
 

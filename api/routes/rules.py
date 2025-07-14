@@ -1,5 +1,6 @@
+"""Rules route for Custom SIEM API."""
 from flask import Blueprint, request, jsonify
-from typing import List, Dict
+from typing import List, Dict, Any
 
 rules_bp = Blueprint('rules', __name__)
 
@@ -7,11 +8,13 @@ rules_bp = Blueprint('rules', __name__)
 rules: List[Dict] = []
 
 @rules_bp.route('/rules', methods=['GET'])
-def list_rules():
+def list_rules() -> Any:
+    """List all correlation rules."""
     return jsonify({"rules": rules})
 
 @rules_bp.route('/rules', methods=['POST'])
-def add_rule():
+def add_rule() -> Any:
+    """Add a new correlation rule."""
     rule = request.json
     rules.append(rule)
     return jsonify({"message": "Rule added", "rule": rule}), 201

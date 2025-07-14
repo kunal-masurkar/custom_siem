@@ -1,3 +1,4 @@
+"""Export route for Custom SIEM API."""
 from flask import Blueprint, request, jsonify, send_file
 import io
 from reportlab.pdfgen import canvas
@@ -5,7 +6,10 @@ from reportlab.pdfgen import canvas
 export_bp = Blueprint('export', __name__)
 
 @export_bp.route('/export/pdf', methods=['POST'])
-def export_pdf():
+def export_pdf() -> send_file:
+    """
+    Export a dashboard as a PDF.
+    """
     dashboard = request.json.get('dashboard', 'default')
     # Placeholder: generate a simple PDF
     buffer = io.BytesIO()

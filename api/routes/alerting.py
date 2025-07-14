@@ -1,3 +1,4 @@
+"""Alerting route for Custom SIEM API."""
 from flask import Blueprint, request, jsonify
 import os
 import requests
@@ -20,13 +21,18 @@ EMAIL_PASS = os.getenv('EMAIL_PASS')
 EMAIL_TO = os.getenv('EMAIL_TO')
 
 @alerting_bp.route('/alert', methods=['POST'])
-def trigger_alert():
-    alert = request.json
+def trigger_alert(alert: dict) -> jsonify:
+    """
+    Triggers an alert by sending it to Slack and email.
+    """
     message = alert.get('message', 'Alert!')
     send_alert(message)
     return jsonify({"message": "Alert triggered", "alert": alert}), 200
 
-def send_alert(message):
+def send_alert(message: str) -> None:
+    """
+    Sends an alert message to Slack and email.
+    """
     # Send to Slack
     if SLACK_TOKEN and SLACK_CHANNEL:
         try:
